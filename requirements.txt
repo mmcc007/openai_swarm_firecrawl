@@ -1,3 +1,4 @@
 firecrawl-py
 openai
 git+http://git@github.com/openai/swarm.git
+gradio

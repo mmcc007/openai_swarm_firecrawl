@@ -1,3 +1,4 @@
 project_snapshot_no_images.json
 .venv
 .env
+__pycache__
