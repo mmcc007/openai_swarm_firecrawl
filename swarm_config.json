@@ -1,0 +1,16 @@
+{
+  "agents": [
+    {
+      "name": "Analyst",
+      "instructions": "Analyze the scraped content and provide insights."
+    },
+    {
+      "name": "Campaign Idea Generator",
+      "instructions": "Generate campaign ideas based on the analysis."
+    },
+    {
+      "name": "Copywriter",
+      "instructions": "Create compelling copy based on the campaign idea."
+    }
+  ]
+}
