@@ -38,9 +38,9 @@ class UserInterface:
 
     def launch(self):
         with gr.Blocks() as interface:
-            gr.Markdown("# Swarm Editor with Firecrawl")
+            gr.Markdown("# Agent Workflow Editor")
             
-            url = gr.Textbox(label="URL to Scrape", value="https://www.okgo.app/")
+            url = gr.Textbox(label="URL to Scrape", value="https://www.lazzloe.com/")
             scrape_button = gr.Button("Scrape Website")
             scraped_content = gr.Textbox(label="Scraped Content")
             
