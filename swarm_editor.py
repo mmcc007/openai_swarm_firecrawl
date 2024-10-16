@@ -42,3 +42,12 @@ class SwarmEditor:
             context_variables.update(response.context_variables)
             initial_input = response.messages[-1]["content"]
         return response
+    
+    def run_single_agent(self, agent, initial_input):
+        response = self.swarm.run(
+            agent=agent,
+            messages=[{"role": "user", "content": initial_input}],
+            context_variables={},
+            max_turns=1
+        )
+        return response

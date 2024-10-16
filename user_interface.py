@@ -28,13 +28,19 @@ class UserInterface:
         )
         return scrape_status.get('markdown', 'No content scraped')
 
-    def update_agent(self, index, name, instructions):
-        self.swarm_editor.update_agent(index, name, instructions)
+    def update_agent(self, index, name, prompt):
+        self.swarm_editor.update_agent(index, name, prompt)
         return f"Agent {index} updated"
 
-    def run_workflow(self, scraped_content):
-        response = self.swarm_editor.run_workflow(scraped_content)
-        return response.messages[-1]["content"]
+    def run_workflow(self, scraped_content, progress=gr.Progress()):
+        outputs = [""] * len(self.swarm_editor.agents)
+        for i, agent in enumerate(self.swarm_editor.agents):
+            progress(i / len(self.swarm_editor.agents), f"Running Agent {i}: {agent.name}")
+            response = self.swarm_editor.run_single_agent(agent, scraped_content)
+            outputs[i] = response.messages[-1]['content']
+            scraped_content = outputs[i]
+            yield outputs
+        progress(1.0, "Workflow complete")
 
     def launch(self):
         with gr.Blocks() as interface:
@@ -44,22 +50,32 @@ class UserInterface:
             scrape_button = gr.Button("Scrape Website")
             scraped_content = gr.Textbox(label="Scraped Content")
             
-            agent_tabs = gr.Tabs()
-            
-            with agent_tabs:
+            agent_config_tabs = gr.Tabs()
+            with agent_config_tabs:
                 for i, agent in enumerate(self.config['agents']):
-                    with gr.Tab(f"Agent {i}"):
+                    with gr.Tab(f"Agent {i} Config"):
                         name = gr.Textbox(label="Name", value=agent['name'])
-                        instructions = gr.Textbox(label="Instructions", value=agent['instructions'], lines=3)
+                        prompt = gr.Textbox(label="Prompt", value=agent['instructions'], lines=3)
                         update_button = gr.Button(f"Update Agent {i}")
                         update_output = gr.Textbox(label="Update Status")
-                        update_button.click(self.update_agent, inputs=[gr.Number(value=i, visible=False), name, instructions], outputs=[update_output])
+                        update_button.click(self.update_agent, inputs=[gr.Number(value=i, visible=False), name, prompt], outputs=[update_output])
             
             run_button = gr.Button("Run Workflow")
-            workflow_output = gr.Textbox(label="Workflow Output")
+            
+            output_tabs = gr.Tabs()
+            output_components = []
+            with output_tabs:
+                for i, agent in enumerate(self.config['agents']):
+                    with gr.Tab(f"Agent {i} Output"):
+                        output = gr.Textbox(label=f"{agent['name']} Output", lines=10)
+                        output_components.append(output)
 
             scrape_button.click(self.scrape_website, inputs=[url], outputs=[scraped_content])
-            run_button.click(self.run_workflow, inputs=[scraped_content], outputs=[workflow_output])
+            run_button.click(
+                self.run_workflow,
+                inputs=[scraped_content],
+                outputs=output_components
+            )
 
         interface.launch()
 
